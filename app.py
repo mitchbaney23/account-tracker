@@ -1,12 +1,23 @@
 from flask import Flask, jsonify, request, render_template
-from datetime import date
+from flask.json.provider import DefaultJSONProvider
+from datetime import date, datetime
 import os
+
+
+class CustomJSONProvider(DefaultJSONProvider):
+    """Custom JSON provider that handles date/datetime serialization."""
+    def default(self, obj):
+        if isinstance(obj, (date, datetime)):
+            return obj.isoformat()
+        return super().default(obj)
 
 from config import Config
 from database import init_db, seed_accounts
 import models
 
 app = Flask(__name__)
+app.json_provider_class = CustomJSONProvider
+app.json = CustomJSONProvider(app)
 app.config.from_object(Config)
 
 # ============================================================================

@@ -15,11 +15,16 @@ app.config.from_object(Config)
 
 def initialize_app():
     """Initialize database if it doesn't exist."""
-    if not os.path.exists(Config.DATABASE_PATH):
-        print("Initializing database...")
+    if Config.use_postgres():
+        print("Using PostgreSQL database...")
         init_db()
         seed_accounts()
-        print("Database initialized with 13 accounts.")
+        print("PostgreSQL database initialized.")
+    elif not os.path.exists(Config.DATABASE_PATH):
+        print("Initializing SQLite database...")
+        init_db()
+        seed_accounts()
+        print("SQLite database initialized with 13 accounts.")
 
 # ============================================================================
 # Main Routes

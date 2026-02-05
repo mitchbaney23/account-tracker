@@ -238,19 +238,19 @@ def _init_postgres():
 def seed_accounts():
     """Seed the database with initial account data."""
     accounts = [
-        ('Acuity Insurance', 'Insurance', 'Sheboygan, WI'),
-        ('MGIC Investment Corporation', 'Insurance/Financial Services', 'Milwaukee, WI'),
-        ('Rockwell Automation', 'Manufacturing/Industrial Automation', 'Milwaukee, WI'),
+        ('Acuity, A Mutual Insurance Company', 'Insurance', 'Sheboygan, WI'),
+        ('American Transmission Company, LLC', 'Utilities/Transmission', 'Waukesha, WI'),
+        ('Crabel Capital Management', 'Financial Services/Investment', 'Milwaukee, WI'),
+        ('Greenheck Fan Corporation', 'Manufacturing/HVAC', 'Schofield, WI'),
+        ('Kohler Co.', 'Manufacturing/Consumer Products', 'Kohler, WI'),
+        ('Kwik Trip, Inc.', 'Retail/Convenience', 'La Crosse, WI'),
+        ('Menard, Inc.', 'Retail/Home Improvement', 'Eau Claire, WI'),
+        ('Mortgage Guaranty Insurance Corporation (MGIC)', 'Insurance/Financial Services', 'Milwaukee, WI'),
+        ('Navitus Health Solutions', 'Healthcare/Pharmacy Benefits', 'Madison, WI'),
         ('Oshkosh Corporation', 'Manufacturing/Defense', 'Oshkosh, WI'),
-        ('Kohler Co', 'Manufacturing/Consumer Products', 'Kohler, WI'),
-        ('Johnson Controls', 'Manufacturing/Building Technology', 'Milwaukee, WI'),
-        ('Harley-Davidson', 'Manufacturing/Automotive', 'Milwaukee, WI'),
-        ('WEC Energy Group', 'Utilities', 'Milwaukee, WI'),
-        ('Northwestern Mutual', 'Financial Services/Insurance', 'Milwaukee, WI'),
-        ('Fiserv', 'Financial Services/Fintech', 'Brookfield, WI'),
-        ('Exact Sciences', 'Healthcare/Diagnostics', 'Madison, WI'),
-        ('Epic Systems', 'Healthcare/Software', 'Verona, WI'),
-        ('American Family Insurance', 'Insurance', 'Madison, WI'),
+        ('Sentry Insurance Company', 'Insurance', 'Stevens Point, WI'),
+        ('WEC Energy Group, Inc.', 'Utilities', 'Milwaukee, WI'),
+        ('WPS Insurance Corporation (Wisconsin Physicians Service)', 'Insurance/Healthcare', 'Madison, WI'),
     ]
 
     db = get_db()

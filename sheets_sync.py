@@ -1,13 +1,22 @@
 """Google Sheets synchronization module for Account Daily Tracker."""
 
 import os
-from datetime import datetime
+from datetime import datetime, date
 
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 import models
+
+
+def to_str(value):
+    """Convert a value to string, handling date/datetime objects."""
+    if value is None:
+        return ''
+    if isinstance(value, (date, datetime)):
+        return value.isoformat()
+    return str(value)
 
 
 class SheetsSync:
@@ -134,11 +143,11 @@ class SheetsSync:
 
         for activity in activities:
             rows.append([
-                activity['activity_date'],
-                activity['account_name'],
-                activity['activity_type'],
-                activity['description'],
-                activity['created_at']
+                to_str(activity['activity_date']),
+                to_str(activity['account_name']),
+                to_str(activity['activity_type']),
+                to_str(activity['description']),
+                to_str(activity['created_at'])
             ])
             activity_ids.append(activity['id'])
 
@@ -171,13 +180,13 @@ class SheetsSync:
 
         for task in tasks:
             rows.append([
-                task['account_name'],
-                task['title'],
-                task['description'] or '',
-                task['due_date'] or '',
-                task['status'],
-                task['created_at'],
-                task['completed_at'] or ''
+                to_str(task['account_name']),
+                to_str(task['title']),
+                to_str(task['description']),
+                to_str(task['due_date']),
+                to_str(task['status']),
+                to_str(task['created_at']),
+                to_str(task['completed_at'])
             ])
             task_ids.append(task['id'])
 
@@ -210,10 +219,10 @@ class SheetsSync:
 
         for note in notes:
             rows.append([
-                note['note_date'],
-                note['account_name'],
-                note['content'],
-                note['created_at']
+                to_str(note['note_date']),
+                to_str(note['account_name']),
+                to_str(note['content']),
+                to_str(note['created_at'])
             ])
             note_ids.append(note['id'])
 

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Daily Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900">Account Daily Tracker</h1>
+                    <p class="text-sm text-gray-500" id="today-date"></p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div id="progress-indicator" class="text-sm font-medium">
+                        <span class="text-green-600" id="touched-count">0</span>/<span id="total-count">13</span> accounts touched
+                    </div>
+                    <button id="sync-btn" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        <span>Sync</span>
+                        <span id="unsynced-badge" class="hidden bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Filter Bar -->
+        <div class="mb-6 flex flex-wrap gap-4 items-center">
+            <div class="flex gap-2">
+                <button class="filter-btn active px-3 py-1.5 rounded-lg text-sm font-medium" data-filter="all">All</button>
+                <button class="filter-btn px-3 py-1.5 rounded-lg text-sm font-medium" data-filter="untouched">Untouched</button>
+                <button class="filter-btn px-3 py-1.5 rounded-lg text-sm font-medium" data-filter="touched">Touched</button>
+            </div>
+            <div class="flex-1"></div>
+            <select id="sort-select" class="px-3 py-1.5 rounded-lg border border-gray-300 text-sm">
+                <option value="name">Sort by Name</option>
+                <option value="touched">Sort by Touch Status</option>
+                <option value="tasks">Sort by Open Tasks</option>
+            </select>
+        </div>
+
+        <!-- Account Cards Grid -->
+        <div id="accounts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <!-- Cards will be rendered here -->
+        </div>
+
+        <!-- Loading State -->
+        <div id="loading" class="hidden flex items-center justify-center py-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+    </main>
+
+    <!-- Activity Modal -->
+    <div id="activity-modal" class="modal hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50"></div>
+        <div class="modal-container flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
+                <button class="modal-close absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <h2 class="text-xl font-bold mb-4">Log Activity</h2>
+                <p class="text-sm text-gray-500 mb-4" id="activity-modal-account"></p>
+                <form id="activity-form">
+                    <input type="hidden" id="activity-account-id">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Activity Type</label>
+                        <select id="activity-type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <option value="">Select type...</option>
+                            <option value="call">Call</option>
+                            <option value="email">Email</option>
+                            <option value="meeting">Meeting</option>
+                            <option value="research">Research</option>
+                            <option value="event_invite">Event Invite</option>
+                            <option value="internal">Internal</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                        <textarea id="activity-description" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="What did you do?" required></textarea>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <input type="date" id="activity-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Log Activity
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Task Modal -->
+    <div id="task-modal" class="modal hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50"></div>
+        <div class="modal-container flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
+                <button class="modal-close absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <h2 class="text-xl font-bold mb-4">Add Task</h2>
+                <p class="text-sm text-gray-500 mb-4" id="task-modal-account"></p>
+                <form id="task-form">
+                    <input type="hidden" id="task-account-id">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                        <input type="text" id="task-title" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Task title..." required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
+                        <textarea id="task-description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Additional details..."></textarea>
+                    </div>
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Due Date (optional)</label>
+                        <input type="date" id="task-due-date" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Add Task
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Note Modal -->
+    <div id="note-modal" class="modal hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50"></div>
+        <div class="modal-container flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative">
+                <button class="modal-close absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <h2 class="text-xl font-bold mb-4">Add Note</h2>
+                <p class="text-sm text-gray-500 mb-4" id="note-modal-account"></p>
+                <form id="note-form">
+                    <input type="hidden" id="note-account-id">
+                    <div class="mb-6">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
+                        <textarea id="note-content" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Write your note..." required></textarea>
+                    </div>
+                    <button type="submit" class="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium">
+                        Add Note
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Detail Modal -->
+    <div id="detail-modal" class="modal hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50"></div>
+        <div class="modal-container flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden relative flex flex-col">
+                <button class="modal-close absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+
+                <!-- Header -->
+                <div class="p-6 border-b">
+                    <h2 class="text-xl font-bold" id="detail-account-name"></h2>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-sm text-gray-500" id="detail-account-industry"></span>
+                        <span class="text-gray-300">|</span>
+                        <span class="text-sm text-gray-500" id="detail-account-location"></span>
+                    </div>
+                    <div class="flex gap-2 mt-4">
+                        <button class="detail-action-btn bg-blue-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-blue-700" data-action="activity">Log Activity</button>
+                        <button class="detail-action-btn bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-200" data-action="task">Add Task</button>
+                        <button class="detail-action-btn bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-200" data-action="note">Add Note</button>
+                    </div>
+                </div>
+
+                <!-- Tabs -->
+                <div class="border-b px-6">
+                    <div class="flex gap-4">
+                        <button class="detail-tab active py-3 px-1 border-b-2 border-blue-600 text-blue-600 font-medium text-sm" data-tab="activities">Activities</button>
+                        <button class="detail-tab py-3 px-1 border-b-2 border-transparent text-gray-500 font-medium text-sm hover:text-gray-700" data-tab="tasks">Tasks</button>
+                        <button class="detail-tab py-3 px-1 border-b-2 border-transparent text-gray-500 font-medium text-sm hover:text-gray-700" data-tab="notes">Notes</button>
+                    </div>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="flex-1 overflow-y-auto p-6">
+                    <div id="detail-activities" class="detail-tab-content">
+                        <div id="activities-list" class="space-y-3">
+                            <!-- Activities will be rendered here -->
+                        </div>
+                        <p id="no-activities" class="text-gray-500 text-center py-8 hidden">No activities logged yet.</p>
+                    </div>
+                    <div id="detail-tasks" class="detail-tab-content hidden">
+                        <div id="tasks-list" class="space-y-3">
+                            <!-- Tasks will be rendered here -->
+                        </div>
+                        <p id="no-tasks" class="text-gray-500 text-center py-8 hidden">No tasks yet.</p>
+                    </div>
+                    <div id="detail-notes" class="detail-tab-content hidden">
+                        <div id="notes-list" class="space-y-3">
+                            <!-- Notes will be rendered here -->
+                        </div>
+                        <p id="no-notes" class="text-gray-500 text-center py-8 hidden">No notes yet.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-4 right-4 z-50 hidden">
+        <div class="bg-gray-800 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-2">
+            <span id="toast-message"></span>
+        </div>
+    </div>
+
+    <!-- New Day Notification -->
+    <div id="new-day-notification" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 hidden">
+        <div class="bg-blue-600 text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+            </svg>
+            <span>New day! All touch statuses have been reset.</span>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

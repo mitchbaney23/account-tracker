@@ -83,6 +83,16 @@ def get_account(account_id):
     return jsonify(account)
 
 # ============================================================================
+# Snooze API Routes
+# ============================================================================
+
+@app.route('/api/accounts/<int:account_id>/snooze', methods=['POST'])
+def snooze_account(account_id):
+    """Snooze an account for today - marks as touched without logging activity."""
+    models.mark_touched(account_id)
+    return jsonify({'message': 'Account snoozed for today'}), 200
+
+# ============================================================================
 # Activity API Routes
 # ============================================================================
 

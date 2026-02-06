@@ -27,7 +27,8 @@ const API = {
         getById: (id) => API.request(`/accounts/${id}`),
         getActivities: (id) => API.request(`/accounts/${id}/activities`),
         getTasks: (id) => API.request(`/accounts/${id}/tasks`),
-        getNotes: (id) => API.request(`/accounts/${id}/notes`)
+        getNotes: (id) => API.request(`/accounts/${id}/notes`),
+        snooze: (id) => API.request(`/accounts/${id}/snooze`, { method: 'POST' })
     },
 
     activities: {
@@ -264,6 +265,12 @@ function renderAccountCard(account, index) {
                             data-account-id="${account.id}">
                         View
                     </button>
+                    ${!account.touched_today ? `
+                    <button class="btn-snooze btn-secondary px-3 py-2.5 rounded-xl text-sm font-semibold"
+                            data-account-id="${account.id}" title="Skip for today">
+                        💤
+                    </button>
+                    ` : ''}
                 </div>
             </div>
         </div>
@@ -605,11 +612,34 @@ function setupEventListeners() {
     });
 
     // Card actions (delegated)
-    document.getElementById('accounts-grid').addEventListener('click', (e) => {
+    document.getElementById('accounts-grid').addEventListener('click', async (e) => {
         const logActivityBtn = e.target.closest('.btn-log-activity');
         const addTaskBtn = e.target.closest('.btn-add-task');
         const viewDetailsBtn = e.target.closest('.btn-view-details');
+        const snoozeBtn = e.target.closest('.btn-snooze');
         const card = e.target.closest('.account-card');
+
+        if (snoozeBtn) {
+            e.stopPropagation();
+            const accountId = snoozeBtn.dataset.accountId;
+            const cardEl = snoozeBtn.closest('.account-card');
+            try {
+                await API.accounts.snooze(accountId);
+                if (State.filter === 'untouched' && cardEl) {
+                    cardEl.classList.add('card-completing');
+                    setTimeout(async () => {
+                        await loadAccounts();
+                        showToast('Account snoozed for today 💤');
+                    }, 600);
+                } else {
+                    await loadAccounts();
+                    showToast('Account snoozed for today 💤');
+                }
+            } catch (error) {
+                showToast('Failed to snooze: ' + error.message);
+            }
+            return;
+        }
 
         if (logActivityBtn) {
             e.stopPropagation();

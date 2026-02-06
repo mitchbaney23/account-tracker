@@ -70,7 +70,7 @@ const API = {
 
 const State = {
     accounts: [],
-    filter: 'all',
+    filter: 'untouched',  // Default to untouched - daily workflow
     sortBy: 'name',
     currentAccountId: null,
     lastActiveDate: null
@@ -187,79 +187,80 @@ const Modal = {
 // Account Card Rendering
 // ============================================================================
 
-function renderAccountCard(account) {
+function renderAccountCard(account, index) {
     const days = daysSince(account.last_activity_date);
-    let daysClass = 'text-gray-500';
-    let daysText = 'No activities';
+    let daysText = 'No activities yet';
+    let daysColor = 'text-gray-400';
+    let urgencyBadge = '';
 
     if (days !== null) {
         if (days === 0) {
             daysText = 'Today';
-            daysClass = 'text-green-600';
+            daysColor = 'text-green-600';
         } else if (days === 1) {
             daysText = 'Yesterday';
-            daysClass = 'text-green-600';
+            daysColor = 'text-green-600';
         } else if (days <= 3) {
             daysText = `${days} days ago`;
-            daysClass = 'text-green-600';
+            daysColor = 'text-green-600';
         } else if (days <= 7) {
             daysText = `${days} days ago`;
-            daysClass = 'text-yellow-600';
+            daysColor = 'text-yellow-600';
         } else {
             daysText = `${days} days ago`;
-            daysClass = 'text-red-600';
+            daysColor = 'text-red-500';
+            urgencyBadge = `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-50 text-red-600">Overdue</span>`;
         }
     }
 
-    const touchedClass = account.touched_today ? 'border-l-green-500' : 'border-l-amber-500';
-    const touchedIcon = account.touched_today
-        ? '<svg class="w-5 h-5 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>'
-        : '<svg class="w-5 h-5 text-amber-500 animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>';
-    const touchedText = account.touched_today ? 'Touched today' : 'Needs attention';
+    const touchedClass = account.touched_today ? 'touched' : '';
+    const statusIcon = account.touched_today
+        ? '<div class="w-10 h-10 rounded-full bg-green-50 flex items-center justify-center"><svg class="w-6 h-6 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg></div>'
+        : '<div class="w-10 h-10 rounded-full bg-amber-50 flex items-center justify-center"><svg class="w-6 h-6 text-amber-500 animate-pulse-soft" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path></svg></div>';
 
     return `
-        <div class="account-card bg-white rounded-lg shadow hover:shadow-md transition-shadow border-l-4 ${touchedClass} cursor-pointer"
-             data-account-id="${account.id}">
-            <div class="p-4">
-                <div class="flex justify-between items-start mb-3">
-                    <div class="flex-1 min-w-0">
-                        <h3 class="font-semibold text-lg text-gray-900 truncate">${account.name}</h3>
-                        <p class="text-sm text-gray-500 truncate">${account.industry}</p>
+        <div class="account-card card-entering ${touchedClass} cursor-pointer"
+             data-account-id="${account.id}"
+             style="animation-delay: ${index * 0.05}s">
+            <div class="p-6">
+                <!-- Top row: name + status icon -->
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex-1 min-w-0 pr-3">
+                        <h3 class="font-bold text-lg text-gray-900 leading-tight mb-1">${account.name}</h3>
+                        <p class="text-sm text-gray-400">${account.industry}</p>
                     </div>
-                    <div class="flex-shrink-0 ml-2">
-                        ${touchedIcon}
+                    ${statusIcon}
+                </div>
+
+                <!-- Stats row -->
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="flex-1 bg-gray-50 rounded-xl px-3 py-2 text-center">
+                        <div class="text-xs text-gray-400 mb-0.5">Last Touch</div>
+                        <div class="text-sm font-semibold ${daysColor}">${daysText}</div>
+                    </div>
+                    <div class="flex-1 bg-gray-50 rounded-xl px-3 py-2 text-center">
+                        <div class="text-xs text-gray-400 mb-0.5">Open Tasks</div>
+                        <div class="text-sm font-semibold ${account.open_tasks > 0 ? 'text-amber-600' : 'text-gray-700'}">${account.open_tasks}</div>
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2 mb-3">
-                    <span class="text-sm ${account.touched_today ? 'text-green-600' : 'text-amber-600'}">${touchedText}</span>
-                </div>
-
-                <div class="grid grid-cols-2 gap-2 text-sm mb-4">
-                    <div>
-                        <span class="text-gray-500">Last activity:</span>
-                        <span class="font-medium ${daysClass}">${daysText}</span>
-                    </div>
-                    <div>
-                        <span class="text-gray-500">Open tasks:</span>
-                        <span class="font-medium ${account.open_tasks > 0 ? 'text-amber-600' : 'text-gray-900'}">${account.open_tasks}</span>
-                    </div>
-                </div>
+                ${urgencyBadge ? `<div class="mb-4">${urgencyBadge}</div>` : ''}
 
                 ${account.last_activity_description ? `
-                    <p class="text-sm text-gray-600 truncate mb-4">${account.last_activity_description}</p>
+                    <p class="text-sm text-gray-500 truncate mb-5 italic">"${account.last_activity_description}"</p>
                 ` : ''}
 
+                <!-- Action buttons -->
                 <div class="flex gap-2">
-                    <button class="btn-log-activity flex-1 bg-blue-600 text-white px-3 py-1.5 rounded text-sm font-medium hover:bg-blue-700 transition-colors"
+                    <button class="btn-log-activity flex-1 btn-primary px-4 py-2.5 rounded-xl text-sm font-semibold"
                             data-account-id="${account.id}" data-account-name="${account.name}">
                         Log Activity
                     </button>
-                    <button class="btn-add-task bg-gray-100 text-gray-700 px-3 py-1.5 rounded text-sm font-medium hover:bg-gray-200 transition-colors"
+                    <button class="btn-add-task btn-secondary px-3 py-2.5 rounded-xl text-sm font-semibold"
                             data-account-id="${account.id}" data-account-name="${account.name}">
                         Task
                     </button>
-                    <button class="btn-view-details bg-gray-100 text-gray-700 px-3 py-1.5 rounded text-sm font-medium hover:bg-gray-200 transition-colors"
+                    <button class="btn-view-details btn-secondary px-3 py-2.5 rounded-xl text-sm font-semibold"
                             data-account-id="${account.id}">
                         View
                     </button>
@@ -271,6 +272,7 @@ function renderAccountCard(account) {
 
 function renderAccounts() {
     const grid = document.getElementById('accounts-grid');
+    const allDone = document.getElementById('all-done');
     let accounts = [...State.accounts];
 
     // Apply filter
@@ -289,15 +291,24 @@ function renderAccounts() {
         accounts.sort((a, b) => b.open_tasks - a.open_tasks);
     }
 
-    grid.innerHTML = accounts.map(renderAccountCard).join('');
+    // Show "all done" if filtering untouched and none left
+    if (State.filter === 'untouched' && accounts.length === 0 && State.accounts.length > 0) {
+        grid.innerHTML = '';
+        allDone.classList.remove('hidden');
+    } else {
+        allDone.classList.add('hidden');
+        grid.innerHTML = accounts.map((account, index) => renderAccountCard(account, index)).join('');
+    }
 }
 
 function updateProgress() {
     const touched = State.accounts.filter(a => a.touched_today).length;
     const total = State.accounts.length;
+    const percentage = total > 0 ? (touched / total) * 100 : 0;
 
     document.getElementById('touched-count').textContent = touched;
     document.getElementById('total-count').textContent = total;
+    document.getElementById('progress-bar').style.width = `${percentage}%`;
 }
 
 // ============================================================================
@@ -345,7 +356,7 @@ async function loadAccountActivities(accountId) {
         } else {
             noActivities.classList.add('hidden');
             list.innerHTML = data.activities.map(activity => `
-                <div class="bg-gray-50 rounded-lg p-3">
+                <div class="bg-gray-50 rounded-xl p-4">
                     <div class="flex items-center gap-2 mb-1">
                         <span class="text-lg">${getActivityTypeIcon(activity.activity_type)}</span>
                         <span class="font-medium">${getActivityTypeLabel(activity.activity_type)}</span>
@@ -373,7 +384,7 @@ async function loadAccountTasks(accountId) {
         } else {
             noTasks.classList.add('hidden');
             list.innerHTML = data.tasks.map(task => `
-                <div class="bg-gray-50 rounded-lg p-3 flex items-start gap-3">
+                <div class="bg-gray-50 rounded-xl p-4 flex items-start gap-3">
                     <input type="checkbox" class="task-checkbox mt-1 w-4 h-4 text-blue-600 rounded"
                            data-task-id="${task.id}" ${task.status === 'completed' ? 'checked' : ''}>
                     <div class="flex-1">
@@ -407,7 +418,7 @@ async function loadAccountNotes(accountId) {
         } else {
             noNotes.classList.add('hidden');
             list.innerHTML = data.notes.map(note => `
-                <div class="bg-gray-50 rounded-lg p-3">
+                <div class="bg-gray-50 rounded-xl p-4">
                     <p class="text-gray-400 text-xs mb-1">${formatDate(note.note_date)}</p>
                     <p class="text-gray-700">${note.content}</p>
                 </div>
@@ -440,7 +451,22 @@ async function handleActivitySubmit(e) {
 
         Modal.close('activity-modal');
         e.target.reset();
-        showToast('Activity logged successfully');
+
+        // Animate the card out if we're on the untouched filter
+        if (State.filter === 'untouched') {
+            const card = document.querySelector(`.account-card[data-account-id="${accountId}"]`);
+            if (card) {
+                card.classList.add('card-completing');
+                // Wait for animation then reload
+                setTimeout(async () => {
+                    await loadAccounts();
+                    showToast('Activity logged! ✓');
+                }, 600);
+                return;
+            }
+        }
+
+        showToast('Activity logged! ✓');
         await loadAccounts();
     } catch (error) {
         showToast('Failed to log activity: ' + error.message);
@@ -465,7 +491,7 @@ async function handleTaskSubmit(e) {
 
         Modal.close('task-modal');
         e.target.reset();
-        showToast('Task added successfully');
+        showToast('Task added ✓');
         await loadAccounts();
     } catch (error) {
         showToast('Failed to add task: ' + error.message);
@@ -486,7 +512,7 @@ async function handleNoteSubmit(e) {
 
         Modal.close('note-modal');
         e.target.reset();
-        showToast('Note added successfully');
+        showToast('Note added ✓');
         await loadAccounts();
     } catch (error) {
         showToast('Failed to add note: ' + error.message);
@@ -520,7 +546,7 @@ async function handleSync() {
 
     try {
         await API.sync.run();
-        showToast('Sync completed successfully');
+        showToast('Sync completed ✓');
         await updateSyncStatus();
     } catch (error) {
         showToast('Sync failed: ' + error.message);
@@ -728,7 +754,6 @@ async function loadAccounts() {
     const grid = document.getElementById('accounts-grid');
 
     loading.classList.remove('hidden');
-    grid.classList.add('opacity-50');
 
     try {
         const data = await API.accounts.getAll();
@@ -739,7 +764,6 @@ async function loadAccounts() {
         showToast('Failed to load accounts: ' + error.message);
     } finally {
         loading.classList.add('hidden');
-        grid.classList.remove('opacity-50');
     }
 }
 

@@ -1,6 +1,18 @@
 /* Custom styles to supplement Tailwind CSS */
 
-/* Filter buttons */
+/* ============================================================================
+   Page & Layout
+   ============================================================================ */
+
+body {
+    background: linear-gradient(135deg, #f0f4ff 0%, #e8eef8 50%, #f0f0f5 100%);
+    min-height: 100vh;
+}
+
+/* ============================================================================
+   Filter Buttons
+   ============================================================================ */
+
 .filter-btn {
     background-color: #f3f4f6;
     color: #4b5563;
@@ -14,18 +26,168 @@
 .filter-btn.active {
     background-color: #2563eb;
     color: white;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
-/* Account card hover effect */
+/* ============================================================================
+   Account Cards - Large Popout Style
+   ============================================================================ */
+
 .account-card {
-    transition: transform 0.2s, box-shadow 0.2s;
+    background: white;
+    border-radius: 16px;
+    box-shadow:
+        0 4px 6px -1px rgba(0, 0, 0, 0.08),
+        0 10px 25px -5px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                box-shadow 0.3s ease,
+                opacity 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.account-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #f59e0b, #f97316);
+    transition: background 0.3s ease;
+}
+
+.account-card.touched::before {
+    background: linear-gradient(90deg, #22c55e, #10b981);
 }
 
 .account-card:hover {
-    transform: translateY(-2px);
+    transform: translateY(-6px) scale(1.02);
+    box-shadow:
+        0 12px 20px -5px rgba(0, 0, 0, 0.12),
+        0 25px 50px -12px rgba(0, 0, 0, 0.15);
 }
 
-/* Pulse animation for attention needed */
+.account-card:active {
+    transform: translateY(-2px) scale(1.01);
+}
+
+/* Card dismiss animation */
+.account-card.card-completing {
+    animation: cardComplete 0.6s ease-out forwards;
+}
+
+@keyframes cardComplete {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    30% {
+        transform: scale(1.05);
+        box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
+    }
+    100% {
+        transform: scale(0.95);
+        opacity: 0;
+        max-height: 0;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+    }
+}
+
+/* Card enter animation */
+.account-card.card-entering {
+    animation: cardEnter 0.4s ease-out forwards;
+}
+
+@keyframes cardEnter {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ============================================================================
+   Progress Bar
+   ============================================================================ */
+
+.progress-bar-container {
+    width: 200px;
+    height: 8px;
+    background: #e5e7eb;
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #22c55e, #10b981);
+    border-radius: 999px;
+    transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================================================
+   Header
+   ============================================================================ */
+
+header {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* ============================================================================
+   Buttons
+   ============================================================================ */
+
+.btn-primary {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    transition: all 0.2s;
+}
+
+.btn-primary:hover {
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-secondary {
+    background: #f3f4f6;
+    color: #374151;
+    transition: all 0.2s;
+}
+
+.btn-secondary:hover {
+    background: #e5e7eb;
+    transform: translateY(-1px);
+}
+
+/* ============================================================================
+   Empty State
+   ============================================================================ */
+
+.empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+/* ============================================================================
+   Pulse animation for attention needed
+   ============================================================================ */
+
 @keyframes pulse-soft {
     0%, 100% {
         opacity: 1;
@@ -35,31 +197,37 @@
     }
 }
 
-.animate-pulse {
+.animate-pulse-soft {
     animation: pulse-soft 2s ease-in-out infinite;
 }
 
-/* Modal transitions */
+/* ============================================================================
+   Modal transitions
+   ============================================================================ */
+
 .modal {
     transition: opacity 0.2s;
 }
 
 .modal-content {
-    animation: slideUp 0.2s ease-out;
+    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 @keyframes slideUp {
     from {
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(30px) scale(0.95);
     }
     to {
         opacity: 1;
-        transform: translateY(0);
+        transform: translateY(0) scale(1);
     }
 }
 
-/* Toast animation */
+/* ============================================================================
+   Toast animation
+   ============================================================================ */
+
 #toast {
     animation: slideInRight 0.3s ease-out;
 }
@@ -75,7 +243,10 @@
     }
 }
 
-/* New day notification animation */
+/* ============================================================================
+   New day notification animation
+   ============================================================================ */
+
 #new-day-notification {
     animation: bounceIn 0.5s ease-out;
 }
@@ -94,7 +265,10 @@
     }
 }
 
-/* Checkbox styling */
+/* ============================================================================
+   Checkbox styling
+   ============================================================================ */
+
 .task-checkbox {
     cursor: pointer;
 }
@@ -103,7 +277,10 @@
     background-color: #2563eb;
 }
 
-/* Detail tabs */
+/* ============================================================================
+   Detail tabs
+   ============================================================================ */
+
 .detail-tab {
     transition: all 0.2s;
 }
@@ -112,7 +289,10 @@
     color: #374151;
 }
 
-/* Activity type icons */
+/* ============================================================================
+   Activity type icons
+   ============================================================================ */
+
 .activity-icon {
     display: inline-flex;
     align-items: center;
@@ -123,7 +303,10 @@
     background-color: #f3f4f6;
 }
 
-/* Responsive adjustments */
+/* ============================================================================
+   Responsive adjustments
+   ============================================================================ */
+
 @media (max-width: 640px) {
     .account-card .btn-log-activity {
         padding-left: 0.5rem;
@@ -131,13 +314,19 @@
     }
 }
 
-/* Sync button loading state */
+/* ============================================================================
+   Sync button
+   ============================================================================ */
+
 #sync-btn:disabled {
     opacity: 0.7;
     cursor: not-allowed;
 }
 
-/* Scrollbar styling for detail modal */
+/* ============================================================================
+   Scrollbar styling
+   ============================================================================ */
+
 .detail-tab-content::-webkit-scrollbar {
     width: 6px;
 }
@@ -156,7 +345,10 @@
     background: #a1a1a1;
 }
 
-/* Focus states for accessibility */
+/* ============================================================================
+   Focus states for accessibility
+   ============================================================================ */
+
 button:focus,
 input:focus,
 select:focus,
@@ -172,7 +364,10 @@ textarea:focus:not(:focus-visible) {
     outline: none;
 }
 
-/* Loading spinner */
+/* ============================================================================
+   Loading spinner
+   ============================================================================ */
+
 .animate-spin {
     animation: spin 1s linear infinite;
 }
@@ -183,5 +378,27 @@ textarea:focus:not(:focus-visible) {
     }
     to {
         transform: rotate(360deg);
+    }
+}
+
+/* ============================================================================
+   All Done Celebration
+   ============================================================================ */
+
+.celebration {
+    animation: celebrationPop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes celebrationPop {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
     }
 }

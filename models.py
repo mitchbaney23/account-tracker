@@ -9,7 +9,7 @@ from config import Config
 def get_all_accounts():
     """Get all accounts with today's touch status and stats."""
     db = get_db()
-    today = date.today().isoformat()
+    today = Config.today().isoformat()
 
     query = '''
         SELECT
@@ -35,7 +35,7 @@ def get_all_accounts():
 def get_account(account_id):
     """Get single account with full details."""
     db = get_db()
-    today = date.today().isoformat()
+    today = Config.today().isoformat()
 
     query = '''
         SELECT
@@ -64,7 +64,7 @@ def get_account(account_id):
 def create_activity(account_id, activity_type, description, activity_date=None):
     """Create a new activity and mark account as touched."""
     if activity_date is None:
-        activity_date = date.today().isoformat()
+        activity_date = Config.today().isoformat()
 
     db = get_db()
 
@@ -118,7 +118,7 @@ def get_account_activities(account_id, limit=50, offset=0):
 def mark_touched(account_id, touch_date=None):
     """Mark an account as touched for a specific date."""
     if touch_date is None:
-        touch_date = date.today().isoformat()
+        touch_date = Config.today().isoformat()
 
     db = get_db()
 
@@ -180,7 +180,7 @@ def update_task(task_id, title=None, description=None, due_date=None, status=Non
 
     completed_at = None
     if new_status == 'completed' and task['status'] != 'completed':
-        completed_at = datetime.now().isoformat()
+        completed_at = Config.now().isoformat()
     elif new_status != 'completed':
         completed_at = None
     else:
@@ -238,7 +238,7 @@ def get_account_tasks(account_id):
 def create_note(account_id, content, note_date=None):
     """Create a new note and mark account as touched."""
     if note_date is None:
-        note_date = date.today().isoformat()
+        note_date = Config.today().isoformat()
 
     db = get_db()
 
@@ -295,7 +295,7 @@ def get_account_notes(account_id):
 def get_dashboard_stats():
     """Get dashboard summary statistics."""
     db = get_db()
-    today = date.today().isoformat()
+    today = Config.today().isoformat()
 
     total_accounts = fetchone(db, 'SELECT COUNT(*) as count FROM accounts')['count']
 

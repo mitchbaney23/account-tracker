@@ -107,7 +107,7 @@ def create_activity():
     account_id = data.get('account_id')
     activity_type = data.get('activity_type')
     description = data.get('description')
-    activity_date = data.get('activity_date', date.today().isoformat())
+    activity_date = data.get('activity_date', Config.today().isoformat())
 
     if not account_id or not activity_type or not description:
         return jsonify({'error': 'account_id, activity_type, and description are required'}), 400
@@ -207,7 +207,7 @@ def create_note():
 
     account_id = data.get('account_id')
     content = data.get('content')
-    note_date = data.get('note_date', date.today().isoformat())
+    note_date = data.get('note_date', Config.today().isoformat())
 
     if not account_id or not content:
         return jsonify({'error': 'account_id and content are required'}), 400

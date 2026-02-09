@@ -251,6 +251,7 @@ def seed_accounts():
         ('Sentry Insurance Company', 'Insurance', 'Stevens Point, WI'),
         ('WEC Energy Group, Inc.', 'Utilities', 'Milwaukee, WI'),
         ('WPS Insurance Corporation (Wisconsin Physicians Service)', 'Insurance/Healthcare', 'Madison, WI'),
+        ('Alliant Energy', 'Utilities', 'Madison, WI'),
     ]
 
     db = get_db()

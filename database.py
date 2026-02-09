@@ -97,6 +97,8 @@ def _init_sqlite():
             name TEXT NOT NULL UNIQUE,
             industry TEXT,
             location TEXT,
+            renewal_date DATE,
+            annual_value DECIMAL(12,2),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -151,12 +153,49 @@ def _init_sqlite():
         )
     ''')
 
+    db.execute('''
+        CREATE TABLE IF NOT EXISTS deals (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            account_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            stage TEXT NOT NULL DEFAULT 'discovery',
+            value DECIMAL(12,2),
+            products TEXT,
+            expected_close_date DATE,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            closed_at TIMESTAMP,
+            synced_to_sheets BOOLEAN DEFAULT FALSE,
+            FOREIGN KEY (account_id) REFERENCES accounts(id)
+        )
+    ''')
+
+    db.execute('''
+        CREATE TABLE IF NOT EXISTS contacts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            account_id INTEGER NOT NULL,
+            name TEXT NOT NULL,
+            title TEXT,
+            role TEXT,
+            email TEXT,
+            phone TEXT,
+            notes TEXT,
+            last_contacted DATE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (account_id) REFERENCES accounts(id)
+        )
+    ''')
+
     db.execute('CREATE INDEX IF NOT EXISTS idx_activities_account_id ON activities(account_id)')
     db.execute('CREATE INDEX IF NOT EXISTS idx_activities_date ON activities(activity_date)')
     db.execute('CREATE INDEX IF NOT EXISTS idx_tasks_account_id ON tasks(account_id)')
     db.execute('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)')
     db.execute('CREATE INDEX IF NOT EXISTS idx_notes_account_id ON notes(account_id)')
     db.execute('CREATE INDEX IF NOT EXISTS idx_daily_touches_date ON daily_touches(touch_date)')
+    db.execute('CREATE INDEX IF NOT EXISTS idx_deals_account_id ON deals(account_id)')
+    db.execute('CREATE INDEX IF NOT EXISTS idx_deals_stage ON deals(stage)')
+    db.execute('CREATE INDEX IF NOT EXISTS idx_contacts_account_id ON contacts(account_id)')
 
     db.commit()
     close_db(db)
@@ -173,6 +212,8 @@ def _init_postgres():
             name TEXT NOT NULL UNIQUE,
             industry TEXT,
             location TEXT,
+            renewal_date DATE,
+            annual_value DECIMAL(12,2),
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
@@ -223,14 +264,77 @@ def _init_postgres():
         )
     ''')
 
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS deals (
+            id SERIAL PRIMARY KEY,
+            account_id INTEGER NOT NULL REFERENCES accounts(id),
+            name TEXT NOT NULL,
+            stage TEXT NOT NULL DEFAULT 'discovery',
+            value DECIMAL(12,2),
+            products TEXT,
+            expected_close_date DATE,
+            notes TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            closed_at TIMESTAMP,
+            synced_to_sheets BOOLEAN DEFAULT FALSE
+        )
+    ''')
+
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS contacts (
+            id SERIAL PRIMARY KEY,
+            account_id INTEGER NOT NULL REFERENCES accounts(id),
+            name TEXT NOT NULL,
+            title TEXT,
+            role TEXT,
+            email TEXT,
+            phone TEXT,
+            notes TEXT,
+            last_contacted DATE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_activities_account_id ON activities(account_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_activities_date ON activities(activity_date)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_account_id ON tasks(account_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_tasks_status ON tasks(status)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_notes_account_id ON notes(account_id)')
     cursor.execute('CREATE INDEX IF NOT EXISTS idx_daily_touches_date ON daily_touches(touch_date)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_deals_account_id ON deals(account_id)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_deals_stage ON deals(stage)')
+    cursor.execute('CREATE INDEX IF NOT EXISTS idx_contacts_account_id ON contacts(account_id)')
 
     cursor.close()
+    db.commit()
+    close_db(db)
+
+
+def run_migrations():
+    """Run migrations to add new columns to existing tables (idempotent)."""
+    db = get_db()
+
+    # Add renewal_date and annual_value to accounts if they don't exist
+    if Config.use_postgres():
+        cursor = db.cursor()
+        try:
+            cursor.execute('ALTER TABLE accounts ADD COLUMN IF NOT EXISTS renewal_date DATE')
+            cursor.execute('ALTER TABLE accounts ADD COLUMN IF NOT EXISTS annual_value DECIMAL(12,2)')
+        except Exception:
+            pass
+        cursor.close()
+    else:
+        # SQLite doesn't have IF NOT EXISTS for ALTER TABLE
+        try:
+            db.execute('ALTER TABLE accounts ADD COLUMN renewal_date DATE')
+        except Exception:
+            pass
+        try:
+            db.execute('ALTER TABLE accounts ADD COLUMN annual_value DECIMAL(12,2)')
+        except Exception:
+            pass
+
     db.commit()
     close_db(db)
 
@@ -285,6 +389,8 @@ def reset_database():
     if Config.use_postgres():
         db = get_db()
         cursor = db.cursor()
+        cursor.execute('DROP TABLE IF EXISTS contacts')
+        cursor.execute('DROP TABLE IF EXISTS deals')
         cursor.execute('DROP TABLE IF EXISTS daily_touches')
         cursor.execute('DROP TABLE IF EXISTS notes')
         cursor.execute('DROP TABLE IF EXISTS tasks')

@@ -234,6 +234,47 @@ class SheetsSync:
 
         return synced
 
+    def sync_deals(self):
+        """Sync unsynced deals to Google Sheets.
+
+        Returns:
+            Number of deals synced.
+        """
+        deals = models.get_unsynced_deals()
+
+        if not deals:
+            return 0
+
+        # Set up headers
+        headers = ['Account', 'Deal Name', 'Stage', 'Value', 'Products', 'Expected Close', 'Notes', 'Created', 'Closed']
+        self._setup_headers('Deals', headers)
+
+        # Prepare rows
+        rows = []
+        deal_ids = []
+
+        for deal in deals:
+            rows.append([
+                to_str(deal['account_name']),
+                to_str(deal['name']),
+                to_str(deal['stage']),
+                to_str(deal['value']),
+                to_str(deal['products']),
+                to_str(deal['expected_close_date']),
+                to_str(deal['notes']),
+                to_str(deal['created_at']),
+                to_str(deal['closed_at'])
+            ])
+            deal_ids.append(deal['id'])
+
+        # Append to sheet
+        synced = self._append_rows('Deals', rows)
+
+        if synced > 0:
+            models.mark_deals_synced(deal_ids)
+
+        return synced
+
     def full_sync(self):
         """Perform a full sync of all unsynced data.
 
@@ -243,12 +284,14 @@ class SheetsSync:
         activities_synced = self.sync_activities()
         tasks_synced = self.sync_tasks()
         notes_synced = self.sync_notes()
+        deals_synced = self.sync_deals()
 
         return {
             'success': True,
             'activities_synced': activities_synced,
             'tasks_synced': tasks_synced,
             'notes_synced': notes_synced,
-            'total_synced': activities_synced + tasks_synced + notes_synced,
+            'deals_synced': deals_synced,
+            'total_synced': activities_synced + tasks_synced + notes_synced + deals_synced,
             'synced_at': datetime.now().isoformat()
         }

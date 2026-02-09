@@ -1,18 +1,21 @@
 from flask import Flask, jsonify, request, render_template
 from flask.json.provider import DefaultJSONProvider
 from datetime import date, datetime
+from decimal import Decimal
 import os
 
 
 class CustomJSONProvider(DefaultJSONProvider):
-    """Custom JSON provider that handles date/datetime serialization."""
+    """Custom JSON provider that handles date/datetime/Decimal serialization."""
     def default(self, obj):
         if isinstance(obj, (date, datetime)):
             return obj.isoformat()
+        if isinstance(obj, Decimal):
+            return float(obj)
         return super().default(obj)
 
 from config import Config
-from database import init_db, seed_accounts
+from database import init_db, seed_accounts, run_migrations
 import models
 
 app = Flask(__name__)
@@ -30,12 +33,16 @@ def initialize_app():
         print("Using PostgreSQL database...")
         init_db()
         seed_accounts()
+        run_migrations()
         print("PostgreSQL database initialized.")
     elif not os.path.exists(Config.DATABASE_PATH):
         print("Initializing SQLite database...")
         init_db()
         seed_accounts()
-        print("SQLite database initialized with 13 accounts.")
+        print("SQLite database initialized with accounts.")
+    else:
+        # Run migrations on existing database
+        run_migrations()
 
 # ============================================================================
 # Main Routes
@@ -81,6 +88,27 @@ def get_account(account_id):
         return jsonify({'error': 'Account not found'}), 404
 
     return jsonify(account)
+
+@app.route('/api/accounts/<int:account_id>', methods=['PUT'])
+def update_account(account_id):
+    """Update account metadata (industry, location, renewal_date, annual_value)."""
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+
+    # Only pass fields that were actually sent in the request
+    update_fields = {}
+    for field in ['name', 'industry', 'location', 'renewal_date', 'annual_value']:
+        if field in data:
+            update_fields[field] = data[field]
+
+    result = models.update_account(account_id, **update_fields)
+
+    if not result:
+        return jsonify({'error': 'Account not found'}), 404
+
+    return jsonify({'message': 'Account updated successfully'})
 
 # ============================================================================
 # Snooze API Routes
@@ -224,6 +252,157 @@ def get_account_notes(account_id):
     """Get notes for an account."""
     notes = models.get_account_notes(account_id)
     return jsonify({'notes': notes})
+
+# ============================================================================
+# Deal API Routes
+# ============================================================================
+
+@app.route('/api/deals', methods=['POST'])
+def create_deal():
+    """Create a new deal."""
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+
+    account_id = data.get('account_id')
+    name = data.get('name')
+
+    if not account_id or not name:
+        return jsonify({'error': 'account_id and name are required'}), 400
+
+    valid_stages = ['discovery', 'design', 'proposal', 'negotiation', 'closed_won', 'closed_lost']
+    stage = data.get('stage', 'discovery')
+    if stage not in valid_stages:
+        return jsonify({'error': f'stage must be one of: {", ".join(valid_stages)}'}), 400
+
+    deal_id = models.create_deal(
+        account_id=account_id,
+        name=name,
+        stage=stage,
+        value=data.get('value'),
+        products=data.get('products'),
+        expected_close_date=data.get('expected_close_date'),
+        notes=data.get('notes')
+    )
+
+    return jsonify({
+        'id': deal_id,
+        'message': 'Deal created successfully'
+    }), 201
+
+@app.route('/api/accounts/<int:account_id>/deals', methods=['GET'])
+def get_account_deals(account_id):
+    """Get deals for an account."""
+    deals = models.get_account_deals(account_id)
+    return jsonify({'deals': deals})
+
+@app.route('/api/deals/<int:deal_id>', methods=['PUT'])
+def update_deal(deal_id):
+    """Update a deal."""
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+
+    valid_stages = ['discovery', 'design', 'proposal', 'negotiation', 'closed_won', 'closed_lost']
+    if 'stage' in data and data['stage'] not in valid_stages:
+        return jsonify({'error': f'stage must be one of: {", ".join(valid_stages)}'}), 400
+
+    result = models.update_deal(
+        deal_id,
+        name=data.get('name'),
+        stage=data.get('stage'),
+        value=data.get('value'),
+        products=data.get('products'),
+        expected_close_date=data.get('expected_close_date'),
+        notes=data.get('notes')
+    )
+
+    if not result:
+        return jsonify({'error': 'Deal not found'}), 404
+
+    return jsonify({'message': 'Deal updated successfully'})
+
+@app.route('/api/deals/<int:deal_id>', methods=['DELETE'])
+def delete_deal(deal_id):
+    """Delete a deal."""
+    models.delete_deal(deal_id)
+    return jsonify({'message': 'Deal deleted successfully'})
+
+# ============================================================================
+# Contact API Routes
+# ============================================================================
+
+@app.route('/api/contacts', methods=['POST'])
+def create_contact():
+    """Create a new contact."""
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+
+    account_id = data.get('account_id')
+    name = data.get('name')
+
+    if not account_id or not name:
+        return jsonify({'error': 'account_id and name are required'}), 400
+
+    valid_roles = ['champion', 'decision_maker', 'technical_eval', 'influencer', 'blocker', 'other']
+    role = data.get('role')
+    if role and role not in valid_roles:
+        return jsonify({'error': f'role must be one of: {", ".join(valid_roles)}'}), 400
+
+    contact_id = models.create_contact(
+        account_id=account_id,
+        name=name,
+        title=data.get('title'),
+        role=role,
+        email=data.get('email'),
+        phone=data.get('phone'),
+        notes=data.get('notes')
+    )
+
+    return jsonify({
+        'id': contact_id,
+        'message': 'Contact created successfully'
+    }), 201
+
+@app.route('/api/accounts/<int:account_id>/contacts', methods=['GET'])
+def get_account_contacts(account_id):
+    """Get contacts for an account."""
+    contacts = models.get_account_contacts(account_id)
+    return jsonify({'contacts': contacts})
+
+@app.route('/api/contacts/<int:contact_id>', methods=['PUT'])
+def update_contact(contact_id):
+    """Update a contact."""
+    data = request.get_json()
+
+    if not data:
+        return jsonify({'error': 'No data provided'}), 400
+
+    result = models.update_contact(
+        contact_id,
+        name=data.get('name'),
+        title=data.get('title'),
+        role=data.get('role'),
+        email=data.get('email'),
+        phone=data.get('phone'),
+        notes=data.get('notes'),
+        last_contacted=data.get('last_contacted')
+    )
+
+    if not result:
+        return jsonify({'error': 'Contact not found'}), 404
+
+    return jsonify({'message': 'Contact updated successfully'})
+
+@app.route('/api/contacts/<int:contact_id>', methods=['DELETE'])
+def delete_contact(contact_id):
+    """Delete a contact."""
+    models.delete_contact(contact_id)
+    return jsonify({'message': 'Contact deleted successfully'})
 
 # ============================================================================
 # Dashboard API Routes

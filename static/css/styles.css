@@ -1,50 +1,173 @@
-/* Custom styles to supplement Tailwind CSS */
+/* ============================================================================
+   Account Tracker v2 — Dark Professional Theme
+   ============================================================================ */
+
+/* ============================================================================
+   CSS Custom Properties
+   ============================================================================ */
+
+:root {
+    --bg-primary: #0f172a;
+    --bg-secondary: #1e293b;
+    --bg-card: rgba(30, 41, 59, 0.8);
+    --bg-card-hover: rgba(30, 41, 59, 0.95);
+    --bg-input: rgba(15, 23, 42, 0.6);
+    --bg-surface: rgba(51, 65, 85, 0.5);
+
+    --border-subtle: rgba(148, 163, 184, 0.1);
+    --border-card: rgba(148, 163, 184, 0.15);
+    --border-input: rgba(148, 163, 184, 0.2);
+    --border-focus: #3b82f6;
+
+    --text-primary: #f1f5f9;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --text-inverse: #0f172a;
+
+    --accent-blue: #3b82f6;
+    --accent-blue-hover: #2563eb;
+    --accent-green: #22c55e;
+    --accent-green-dim: rgba(34, 197, 94, 0.15);
+    --accent-amber: #f59e0b;
+    --accent-amber-dim: rgba(245, 158, 11, 0.15);
+    --accent-red: #ef4444;
+    --accent-red-dim: rgba(239, 68, 68, 0.15);
+    --accent-purple: #a855f7;
+
+    --shadow-card: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+    --shadow-card-hover: 0 12px 20px -5px rgba(0, 0, 0, 0.4), 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    --shadow-glow-blue: 0 0 20px rgba(59, 130, 246, 0.3);
+    --shadow-glow-green: 0 0 20px rgba(34, 197, 94, 0.3);
+}
 
 /* ============================================================================
    Page & Layout
    ============================================================================ */
 
 body {
-    background: linear-gradient(135deg, #f0f4ff 0%, #e8eef8 50%, #f0f0f5 100%);
+    background: linear-gradient(135deg, var(--bg-primary) 0%, #0c1222 50%, var(--bg-primary) 100%);
     min-height: 100vh;
+    color: var(--text-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
+
+/* ============================================================================
+   Header
+   ============================================================================ */
+
+header {
+    background: rgba(15, 23, 42, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+/* ============================================================================
+   Stats Bar
+   ============================================================================ */
+
+.stats-bar {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.stat-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 12px 16px;
+    min-width: 140px;
+    flex: 1;
+    backdrop-filter: blur(10px);
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.stat-card:hover {
+    border-color: var(--accent-blue);
+    background: var(--bg-card-hover);
+}
+
+.stat-card .stat-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+}
+
+.stat-card .stat-value {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.stat-card.stat-danger .stat-value { color: var(--accent-red); }
+.stat-card.stat-warning .stat-value { color: var(--accent-amber); }
+.stat-card.stat-success .stat-value { color: var(--accent-green); }
+.stat-card.stat-info .stat-value { color: var(--accent-blue); }
 
 /* ============================================================================
    Filter Buttons
    ============================================================================ */
 
 .filter-btn {
-    background-color: #f3f4f6;
-    color: #4b5563;
+    background-color: var(--bg-surface);
+    color: var(--text-secondary);
     transition: all 0.2s;
+    border: 1px solid transparent;
 }
 
 .filter-btn:hover {
-    background-color: #e5e7eb;
+    background-color: rgba(71, 85, 105, 0.5);
+    color: var(--text-primary);
 }
 
 .filter-btn.active {
-    background-color: #2563eb;
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-hover));
     color: white;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    box-shadow: var(--shadow-glow-blue);
+    border-color: transparent;
 }
 
 /* ============================================================================
-   Account Cards - Large Popout Style
+   Sort Select
+   ============================================================================ */
+
+#sort-select {
+    background: var(--bg-surface);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-input);
+}
+
+#sort-select:focus {
+    border-color: var(--accent-blue);
+}
+
+#sort-select option {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+/* ============================================================================
+   Account Cards — Glassmorphism Dark
    ============================================================================ */
 
 .account-card {
-    background: white;
+    background: var(--bg-card);
     border-radius: 16px;
-    box-shadow:
-        0 4px 6px -1px rgba(0, 0, 0, 0.08),
-        0 10px 25px -5px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-card);
+    border: 1px solid var(--border-card);
     transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
                 box-shadow 0.3s ease,
+                border-color 0.3s ease,
                 opacity 0.3s ease;
     position: relative;
     overflow: hidden;
+    backdrop-filter: blur(10px);
 }
 
 .account-card::before {
@@ -53,24 +176,23 @@ body {
     top: 0;
     left: 0;
     right: 0;
-    height: 4px;
-    background: linear-gradient(90deg, #f59e0b, #f97316);
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-amber), #f97316);
     transition: background 0.3s ease;
 }
 
 .account-card.touched::before {
-    background: linear-gradient(90deg, #22c55e, #10b981);
+    background: linear-gradient(90deg, var(--accent-green), #10b981);
 }
 
 .account-card:hover {
-    transform: translateY(-6px) scale(1.02);
-    box-shadow:
-        0 12px 20px -5px rgba(0, 0, 0, 0.12),
-        0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: var(--shadow-card-hover);
+    border-color: rgba(148, 163, 184, 0.25);
 }
 
 .account-card:active {
-    transform: translateY(-2px) scale(1.01);
+    transform: translateY(-2px) scale(1.005);
 }
 
 /* Card dismiss animation */
@@ -84,8 +206,8 @@ body {
         opacity: 1;
     }
     30% {
-        transform: scale(1.05);
-        box-shadow: 0 0 30px rgba(34, 197, 94, 0.4);
+        transform: scale(1.03);
+        box-shadow: var(--shadow-glow-green);
     }
     100% {
         transform: scale(0.95);
@@ -114,33 +236,202 @@ body {
 }
 
 /* ============================================================================
+   Card Inner Elements
+   ============================================================================ */
+
+.card-stat-box {
+    background: var(--bg-input);
+    border-radius: 10px;
+    padding: 8px 12px;
+    text-align: center;
+    border: 1px solid var(--border-subtle);
+}
+
+.card-stat-box .stat-label {
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 2px;
+}
+
+.card-stat-box .stat-value {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Renewal Badge */
+.renewal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+}
+
+.renewal-badge.renewal-safe {
+    background: rgba(100, 116, 139, 0.2);
+    color: var(--text-muted);
+}
+
+.renewal-badge.renewal-warning {
+    background: var(--accent-amber-dim);
+    color: var(--accent-amber);
+}
+
+.renewal-badge.renewal-urgent {
+    background: var(--accent-red-dim);
+    color: var(--accent-red);
+    animation: pulse-soft 2s ease-in-out infinite;
+}
+
+.renewal-badge.renewal-overdue {
+    background: var(--accent-red-dim);
+    color: var(--accent-red);
+    animation: pulse-urgent 1s ease-in-out infinite;
+}
+
+/* Deal Badge */
+.deal-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--accent-blue);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+}
+
+/* Stage Pills */
+.stage-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.stage-discovery { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
+.stage-design { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.stage-proposal { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.stage-negotiation { background: rgba(249, 115, 22, 0.15); color: #fb923c; }
+.stage-closed_won { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+.stage-closed_lost { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+
+/* Role Badges */
+.role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.role-champion { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
+.role-decision_maker { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+.role-technical_eval { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+.role-influencer { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+.role-blocker { background: rgba(239, 68, 68, 0.15); color: #f87171; }
+.role-other { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
+
+/* Quick Log Buttons */
+.quick-log-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.quick-log-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.quick-log-btn:hover {
+    background: rgba(59, 130, 246, 0.15);
+    border-color: var(--accent-blue);
+    transform: translateY(-2px);
+}
+
+.quick-log-btn.more-btn {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 700;
+}
+
+/* Quick log inline form */
+.quick-log-inline {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+    animation: slideDown 0.2s ease-out;
+}
+
+.quick-log-inline input {
+    flex: 1;
+    background: var(--bg-input);
+    border: 1px solid var(--border-input);
+    border-radius: 10px;
+    padding: 8px 12px;
+    color: var(--text-primary);
+    font-size: 0.8rem;
+}
+
+.quick-log-inline input:focus {
+    border-color: var(--accent-blue);
+    outline: none;
+}
+
+.quick-log-inline button {
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================================
    Progress Bar
    ============================================================================ */
 
 .progress-bar-container {
     width: 200px;
-    height: 8px;
-    background: #e5e7eb;
+    height: 6px;
+    background: rgba(100, 116, 139, 0.3);
     border-radius: 999px;
     overflow: hidden;
 }
 
 .progress-bar-fill {
     height: 100%;
-    background: linear-gradient(90deg, #22c55e, #10b981);
+    background: linear-gradient(90deg, var(--accent-green), #10b981);
     border-radius: 999px;
     transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-/* ============================================================================
-   Header
-   ============================================================================ */
-
-header {
-    background: rgba(255, 255, 255, 0.95);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 /* ============================================================================
@@ -148,26 +439,40 @@ header {
    ============================================================================ */
 
 .btn-primary {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-hover));
     color: white;
-    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
     transition: all 0.2s;
+    border: none;
 }
 
 .btn-primary:hover {
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
     transform: translateY(-1px);
 }
 
 .btn-secondary {
-    background: #f3f4f6;
-    color: #374151;
+    background: var(--bg-surface);
+    color: var(--text-secondary);
     transition: all 0.2s;
+    border: 1px solid var(--border-subtle);
 }
 
 .btn-secondary:hover {
-    background: #e5e7eb;
+    background: rgba(71, 85, 105, 0.5);
+    color: var(--text-primary);
     transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--accent-red);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    transition: all 0.2s;
+}
+
+.btn-danger:hover {
+    background: rgba(239, 68, 68, 0.25);
 }
 
 /* ============================================================================
@@ -184,17 +489,26 @@ header {
     margin-bottom: 1rem;
 }
 
+.empty-state h2 {
+    color: var(--text-primary);
+}
+
+.empty-state p {
+    color: var(--text-secondary);
+}
+
 /* ============================================================================
-   Pulse animation for attention needed
+   Animations
    ============================================================================ */
 
 @keyframes pulse-soft {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.6;
-    }
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+@keyframes pulse-urgent {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
 }
 
 .animate-pulse-soft {
@@ -210,6 +524,8 @@ header {
 }
 
 .modal-content {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-card);
     animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -224,12 +540,91 @@ header {
     }
 }
 
+/* Modal form inputs */
+.modal-content label {
+    color: var(--text-secondary);
+}
+
+.modal-content input,
+.modal-content select,
+.modal-content textarea {
+    background: var(--bg-input);
+    border: 1px solid var(--border-input);
+    color: var(--text-primary);
+}
+
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+.modal-content input::placeholder,
+.modal-content textarea::placeholder {
+    color: var(--text-muted);
+}
+
+.modal-content select option {
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+}
+
+.modal-close {
+    color: var(--text-muted);
+}
+
+.modal-close:hover {
+    color: var(--text-primary);
+}
+
+/* ============================================================================
+   Detail Modal
+   ============================================================================ */
+
+.detail-header {
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.detail-tab {
+    transition: all 0.2s;
+    color: var(--text-muted);
+    border-bottom: 2px solid transparent;
+}
+
+.detail-tab:hover:not(.active) {
+    color: var(--text-secondary);
+}
+
+.detail-tab.active {
+    color: var(--accent-blue);
+    border-bottom-color: var(--accent-blue);
+}
+
+.detail-tab-content .item-card {
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: border-color 0.2s;
+}
+
+.detail-tab-content .item-card:hover {
+    border-color: var(--border-input);
+}
+
 /* ============================================================================
    Toast animation
    ============================================================================ */
 
 #toast {
     animation: slideInRight 0.3s ease-out;
+}
+
+#toast > div {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-card);
+    color: var(--text-primary);
 }
 
 @keyframes slideInRight {
@@ -249,6 +644,10 @@ header {
 
 #new-day-notification {
     animation: bounceIn 0.5s ease-out;
+}
+
+#new-day-notification > div {
+    background: linear-gradient(135deg, var(--accent-blue), var(--accent-blue-hover));
 }
 
 @keyframes bounceIn {
@@ -271,78 +670,29 @@ header {
 
 .task-checkbox {
     cursor: pointer;
-}
-
-.task-checkbox:checked {
-    background-color: #2563eb;
-}
-
-/* ============================================================================
-   Detail tabs
-   ============================================================================ */
-
-.detail-tab {
-    transition: all 0.2s;
-}
-
-.detail-tab:hover:not(.active) {
-    color: #374151;
-}
-
-/* ============================================================================
-   Activity type icons
-   ============================================================================ */
-
-.activity-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    border-radius: 9999px;
-    background-color: #f3f4f6;
-}
-
-/* ============================================================================
-   Responsive adjustments
-   ============================================================================ */
-
-@media (max-width: 640px) {
-    .account-card .btn-log-activity {
-        padding-left: 0.5rem;
-        padding-right: 0.5rem;
-    }
-}
-
-/* ============================================================================
-   Sync button
-   ============================================================================ */
-
-#sync-btn:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
+    accent-color: var(--accent-blue);
 }
 
 /* ============================================================================
    Scrollbar styling
    ============================================================================ */
 
-.detail-tab-content::-webkit-scrollbar {
+::-webkit-scrollbar {
     width: 6px;
+    height: 6px;
 }
 
-.detail-tab-content::-webkit-scrollbar-track {
-    background: #f1f1f1;
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(100, 116, 139, 0.3);
     border-radius: 3px;
 }
 
-.detail-tab-content::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 3px;
-}
-
-.detail-tab-content::-webkit-scrollbar-thumb:hover {
-    background: #a1a1a1;
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 116, 139, 0.5);
 }
 
 /* ============================================================================
@@ -353,7 +703,7 @@ button:focus,
 input:focus,
 select:focus,
 textarea:focus {
-    outline: 2px solid #2563eb;
+    outline: 2px solid var(--accent-blue);
     outline-offset: 2px;
 }
 
@@ -373,12 +723,17 @@ textarea:focus:not(:focus-visible) {
 }
 
 @keyframes spin {
-    from {
-        transform: rotate(0deg);
-    }
-    to {
-        transform: rotate(360deg);
-    }
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================================================
+   Sync button
+   ============================================================================ */
+
+#sync-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 /* ============================================================================
@@ -390,15 +745,63 @@ textarea:focus:not(:focus-visible) {
 }
 
 @keyframes celebrationPop {
-    0% {
-        transform: scale(0.8);
-        opacity: 0;
+    0% { transform: scale(0.8); opacity: 0; }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* ============================================================================
+   Contact Card
+   ============================================================================ */
+
+.contact-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+}
+
+.contact-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-surface);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+/* ============================================================================
+   Responsive adjustments
+   ============================================================================ */
+
+@media (max-width: 640px) {
+    .stats-bar {
+        flex-wrap: nowrap;
+        overflow-x: auto;
     }
-    50% {
-        transform: scale(1.05);
+
+    .stat-card {
+        min-width: 120px;
+        flex: 0 0 auto;
     }
-    100% {
-        transform: scale(1);
-        opacity: 1;
+
+    .quick-log-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-bar {
+        gap: 8px;
     }
 }

@@ -3,34 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Daily Tracker</title>
+    <title>Account Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/styles.css">
 </head>
 <body class="min-h-screen">
     <!-- Header -->
     <header class="sticky top-0 z-40">
-        <div class="max-w-6xl mx-auto px-4 py-4">
+        <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                    <h1 class="text-2xl font-bold text-gray-900">Daily Account Tracker</h1>
-                    <p class="text-sm text-gray-500" id="today-date"></p>
+                    <h1 class="text-xl font-extrabold text-white tracking-tight">Account Tracker</h1>
+                    <p class="text-xs text-slate-400" id="today-date"></p>
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="flex flex-col items-end gap-1">
                         <div class="text-sm font-semibold">
-                            <span class="text-green-600" id="touched-count">0</span>/<span id="total-count">13</span> done
+                            <span class="text-emerald-400" id="touched-count">0</span><span class="text-slate-500">/</span><span class="text-slate-400" id="total-count">14</span>
+                            <span class="text-slate-500 text-xs ml-1">today</span>
                         </div>
                         <div class="progress-bar-container">
                             <div class="progress-bar-fill" id="progress-bar" style="width: 0%"></div>
                         </div>
                     </div>
-                    <button id="sync-btn" class="flex items-center gap-2 px-4 py-2 btn-primary rounded-lg font-medium">
+                    <button id="sync-btn" class="flex items-center gap-2 px-3 py-2 btn-secondary rounded-lg text-sm font-medium">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                         </svg>
                         <span>Sync</span>
-                        <span id="unsynced-badge" class="hidden bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+                        <span id="unsynced-badge" class="hidden bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">0</span>
                     </button>
                 </div>
             </div>
@@ -38,24 +42,50 @@
     </header>
 
     <!-- Main Content -->
-    <main class="max-w-6xl mx-auto px-4 py-6">
+    <main class="max-w-7xl mx-auto px-4 py-5">
+        <!-- Stats Bar -->
+        <div class="stats-bar mb-5" id="stats-bar">
+            <div class="stat-card stat-info" data-stat="weekly">
+                <div class="stat-label">This Week</div>
+                <div class="stat-value" id="stat-weekly">-/-</div>
+            </div>
+            <div class="stat-card stat-success" data-stat="pipeline">
+                <div class="stat-label">Pipeline</div>
+                <div class="stat-value" id="stat-pipeline">$0</div>
+            </div>
+            <div class="stat-card stat-warning" data-stat="renewals">
+                <div class="stat-label">Renewals &lt;30d</div>
+                <div class="stat-value" id="stat-renewals">0</div>
+            </div>
+            <div class="stat-card stat-danger" data-stat="overdue">
+                <div class="stat-label">Overdue Tasks</div>
+                <div class="stat-value" id="stat-overdue">0</div>
+            </div>
+            <div class="stat-card" data-stat="streak">
+                <div class="stat-label">Streak</div>
+                <div class="stat-value" id="stat-streak">0d</div>
+            </div>
+        </div>
+
         <!-- Filter Bar -->
-        <div class="mb-8 flex flex-wrap gap-4 items-center">
+        <div class="mb-6 flex flex-wrap gap-3 items-center">
             <div class="flex gap-2">
                 <button class="filter-btn px-4 py-2 rounded-xl text-sm font-semibold" data-filter="all">All</button>
                 <button class="filter-btn active px-4 py-2 rounded-xl text-sm font-semibold" data-filter="untouched">To Do</button>
                 <button class="filter-btn px-4 py-2 rounded-xl text-sm font-semibold" data-filter="touched">Done</button>
             </div>
             <div class="flex-1"></div>
-            <select id="sort-select" class="px-3 py-2 rounded-xl border border-gray-200 text-sm bg-white shadow-sm">
+            <select id="sort-select" class="px-3 py-2 rounded-xl text-sm">
                 <option value="name">Sort by Name</option>
                 <option value="touched">Sort by Status</option>
                 <option value="tasks">Sort by Open Tasks</option>
+                <option value="renewal">Sort by Renewal</option>
+                <option value="pipeline">Sort by Pipeline</option>
             </select>
         </div>
 
         <!-- Account Cards Grid -->
-        <div id="accounts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div id="accounts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             <!-- Cards will be rendered here -->
         </div>
 
@@ -63,8 +93,8 @@
         <div id="all-done" class="hidden">
             <div class="celebration empty-state">
                 <div class="empty-state-icon">🎉</div>
-                <h2 class="text-2xl font-bold text-gray-800 mb-2">All accounts touched!</h2>
-                <p class="text-gray-500">You've reached out to every account today. Great work!</p>
+                <h2 class="text-2xl font-bold mb-2">All accounts touched!</h2>
+                <p class="text-slate-400">You've reached out to every account today. Great work!</p>
                 <button class="mt-6 px-6 py-2 btn-secondary rounded-xl text-sm font-semibold" onclick="document.querySelector('[data-filter=all]').click()">
                     View All Accounts
                 </button>
@@ -73,27 +103,27 @@
 
         <!-- Loading State -->
         <div id="loading" class="hidden flex items-center justify-center py-12">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
     </main>
 
     <!-- Activity Modal -->
     <div id="activity-modal" class="modal hidden fixed inset-0 z-50 overflow-y-auto">
-        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50"></div>
+        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-60"></div>
         <div class="modal-container flex items-center justify-center min-h-screen p-4">
-            <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
-                <button class="modal-close absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="modal-content rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+                <button class="modal-close absolute top-4 right-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
-                <h2 class="text-xl font-bold mb-1">Log Activity</h2>
-                <p class="text-sm text-gray-500 mb-5" id="activity-modal-account"></p>
+                <h2 class="text-lg font-bold text-white mb-1">Log Activity</h2>
+                <p class="text-sm text-slate-400 mb-5" id="activity-modal-account"></p>
                 <form id="activity-form">
                     <input type="hidden" id="activity-account-id">
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Activity Type</label>
-                        <select id="activity-type" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white" required>
+                        <label class="block text-sm font-medium mb-1">Activity Type</label>
+                        <select id="activity-type" class="w-full px-3 py-2.5 rounded-xl" required>
                             <option value="">Select type...</option>
                             <option value="call">📞 Call</option>
                             <option value="email">📧 Email</option>
@@ -105,14 +135,14 @@
                         </select>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                        <textarea id="activity-description" rows="3" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="What did you do?" required></textarea>
+                        <label class="block text-sm font-medium mb-1">Description</label>
+                        <textarea id="activity-description" rows="3" class="w-full px-3 py-2.5 rounded-xl" placeholder="What did you do?" required></textarea>
                     </div>
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                        <input type="date" id="activity-date" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium mb-1">Date</label>
+                        <input type="date" id="activity-date" class="w-full px-3 py-2.5 rounded-xl">
                     </div>
-                    <button type="submit" class="w-full btn-primary py-3 px-4 rounded-xl font-semibold text-lg">
+                    <button type="submit" class="w-full btn-primary py-3 px-4 rounded-xl font-semibold">
                         Log Activity
                     </button>
                 </form>
@@ -122,31 +152,31 @@
 
     <!-- Task Modal -->
     <div id="task-modal" class="modal hidden fixed inset-0 z-50 overflow-y-auto">
-        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50"></div>
+        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-60"></div>
         <div class="modal-container flex items-center justify-center min-h-screen p-4">
-            <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
-                <button class="modal-close absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="modal-content rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+                <button class="modal-close absolute top-4 right-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
-                <h2 class="text-xl font-bold mb-1">Add Task</h2>
-                <p class="text-sm text-gray-500 mb-5" id="task-modal-account"></p>
+                <h2 class="text-lg font-bold text-white mb-1">Add Task</h2>
+                <p class="text-sm text-slate-400 mb-5" id="task-modal-account"></p>
                 <form id="task-form">
                     <input type="hidden" id="task-account-id">
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                        <input type="text" id="task-title" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Task title..." required>
+                        <label class="block text-sm font-medium mb-1">Title</label>
+                        <input type="text" id="task-title" class="w-full px-3 py-2.5 rounded-xl" placeholder="Task title..." required>
                     </div>
                     <div class="mb-4">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Description (optional)</label>
-                        <textarea id="task-description" rows="2" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Additional details..."></textarea>
+                        <label class="block text-sm font-medium mb-1">Description (optional)</label>
+                        <textarea id="task-description" rows="2" class="w-full px-3 py-2.5 rounded-xl" placeholder="Additional details..."></textarea>
                     </div>
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Due Date (optional)</label>
-                        <input type="date" id="task-due-date" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium mb-1">Due Date (optional)</label>
+                        <input type="date" id="task-due-date" class="w-full px-3 py-2.5 rounded-xl">
                     </div>
-                    <button type="submit" class="w-full btn-primary py-3 px-4 rounded-xl font-semibold text-lg">
+                    <button type="submit" class="w-full btn-primary py-3 px-4 rounded-xl font-semibold">
                         Add Task
                     </button>
                 </form>
@@ -156,24 +186,178 @@
 
     <!-- Note Modal -->
     <div id="note-modal" class="modal hidden fixed inset-0 z-50 overflow-y-auto">
-        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50"></div>
+        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-60"></div>
         <div class="modal-container flex items-center justify-center min-h-screen p-4">
-            <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
-                <button class="modal-close absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="modal-content rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+                <button class="modal-close absolute top-4 right-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
-                <h2 class="text-xl font-bold mb-1">Add Note</h2>
-                <p class="text-sm text-gray-500 mb-5" id="note-modal-account"></p>
+                <h2 class="text-lg font-bold text-white mb-1">Add Note</h2>
+                <p class="text-sm text-slate-400 mb-5" id="note-modal-account"></p>
                 <form id="note-form">
                     <input type="hidden" id="note-account-id">
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Note</label>
-                        <textarea id="note-content" rows="4" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Write your note..." required></textarea>
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium mb-1">Note</label>
+                        <textarea id="note-content" rows="4" class="w-full px-3 py-2.5 rounded-xl" placeholder="Write your note..." required></textarea>
                     </div>
-                    <button type="submit" class="w-full btn-primary py-3 px-4 rounded-xl font-semibold text-lg">
+                    <button type="submit" class="w-full btn-primary py-3 px-4 rounded-xl font-semibold">
                         Add Note
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deal Modal -->
+    <div id="deal-modal" class="modal hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-60"></div>
+        <div class="modal-container flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+                <button class="modal-close absolute top-4 right-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <h2 class="text-lg font-bold text-white mb-1" id="deal-modal-title">Add Deal</h2>
+                <p class="text-sm text-slate-400 mb-5" id="deal-modal-account"></p>
+                <form id="deal-form">
+                    <input type="hidden" id="deal-account-id">
+                    <input type="hidden" id="deal-id">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Deal Name</label>
+                        <input type="text" id="deal-name" class="w-full px-3 py-2.5 rounded-xl" placeholder="e.g. RHEL Migration Phase 2" required>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Stage</label>
+                            <select id="deal-stage" class="w-full px-3 py-2.5 rounded-xl">
+                                <option value="discovery">Discovery</option>
+                                <option value="design">Design</option>
+                                <option value="proposal">Proposal</option>
+                                <option value="negotiation">Negotiation</option>
+                                <option value="closed_won">Closed Won</option>
+                                <option value="closed_lost">Closed Lost</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Value ($)</label>
+                            <input type="number" id="deal-value" class="w-full px-3 py-2.5 rounded-xl" placeholder="50000" step="1000">
+                        </div>
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Products</label>
+                        <input type="text" id="deal-products" class="w-full px-3 py-2.5 rounded-xl" placeholder="RHEL, OpenShift, AAP">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Expected Close Date</label>
+                        <input type="date" id="deal-close-date" class="w-full px-3 py-2.5 rounded-xl">
+                    </div>
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium mb-1">Notes (optional)</label>
+                        <textarea id="deal-notes" rows="2" class="w-full px-3 py-2.5 rounded-xl" placeholder="Deal notes..."></textarea>
+                    </div>
+                    <button type="submit" class="w-full btn-primary py-3 px-4 rounded-xl font-semibold">
+                        Save Deal
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="modal hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-60"></div>
+        <div class="modal-container flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+                <button class="modal-close absolute top-4 right-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <h2 class="text-lg font-bold text-white mb-1" id="contact-modal-title">Add Contact</h2>
+                <p class="text-sm text-slate-400 mb-5" id="contact-modal-account"></p>
+                <form id="contact-form">
+                    <input type="hidden" id="contact-account-id">
+                    <input type="hidden" id="contact-id">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Name</label>
+                        <input type="text" id="contact-name" class="w-full px-3 py-2.5 rounded-xl" placeholder="Full name" required>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Title</label>
+                            <input type="text" id="contact-title" class="w-full px-3 py-2.5 rounded-xl" placeholder="VP of Infra">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Role</label>
+                            <select id="contact-role" class="w-full px-3 py-2.5 rounded-xl">
+                                <option value="">Select...</option>
+                                <option value="champion">Champion</option>
+                                <option value="decision_maker">Decision Maker</option>
+                                <option value="technical_eval">Technical Eval</option>
+                                <option value="influencer">Influencer</option>
+                                <option value="blocker">Blocker</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Email</label>
+                            <input type="email" id="contact-email" class="w-full px-3 py-2.5 rounded-xl" placeholder="email@co.com">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Phone</label>
+                            <input type="tel" id="contact-phone" class="w-full px-3 py-2.5 rounded-xl" placeholder="555-0123">
+                        </div>
+                    </div>
+                    <div class="mb-5">
+                        <label class="block text-sm font-medium mb-1">Notes (optional)</label>
+                        <textarea id="contact-notes" rows="2" class="w-full px-3 py-2.5 rounded-xl" placeholder="Context about this contact..."></textarea>
+                    </div>
+                    <button type="submit" class="w-full btn-primary py-3 px-4 rounded-xl font-semibold">
+                        Save Contact
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Account Edit Modal -->
+    <div id="account-edit-modal" class="modal hidden fixed inset-0 z-50 overflow-y-auto">
+        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-60"></div>
+        <div class="modal-container flex items-center justify-center min-h-screen p-4">
+            <div class="modal-content rounded-2xl shadow-2xl max-w-md w-full p-6 relative">
+                <button class="modal-close absolute top-4 right-4">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+                <h2 class="text-lg font-bold text-white mb-5">Edit Account</h2>
+                <form id="account-edit-form">
+                    <input type="hidden" id="edit-account-id">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Industry</label>
+                        <input type="text" id="edit-industry" class="w-full px-3 py-2.5 rounded-xl" placeholder="Industry">
+                    </div>
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium mb-1">Location</label>
+                        <input type="text" id="edit-location" class="w-full px-3 py-2.5 rounded-xl" placeholder="Location">
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mb-5">
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Renewal Date</label>
+                            <input type="date" id="edit-renewal-date" class="w-full px-3 py-2.5 rounded-xl">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium mb-1">Annual Value ($)</label>
+                            <input type="number" id="edit-annual-value" class="w-full px-3 py-2.5 rounded-xl" placeholder="100000" step="1000">
+                        </div>
+                    </div>
+                    <button type="submit" class="w-full btn-primary py-3 px-4 rounded-xl font-semibold">
+                        Save Changes
                     </button>
                 </form>
             </div>
@@ -182,58 +366,72 @@
 
     <!-- Account Detail Modal -->
     <div id="detail-modal" class="modal hidden fixed inset-0 z-50 overflow-y-auto">
-        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50"></div>
+        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-60"></div>
         <div class="modal-container flex items-center justify-center min-h-screen p-4">
-            <div class="modal-content bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden relative flex flex-col">
-                <button class="modal-close absolute top-4 right-4 text-gray-400 hover:text-gray-600 z-10">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="modal-content rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden relative flex flex-col">
+                <button class="modal-close absolute top-4 right-4 z-10">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
 
                 <!-- Header -->
-                <div class="p-6 border-b">
-                    <h2 class="text-xl font-bold" id="detail-account-name"></h2>
-                    <div class="flex items-center gap-2 mt-1">
-                        <span class="text-sm text-gray-500" id="detail-account-industry"></span>
-                        <span class="text-gray-300">|</span>
-                        <span class="text-sm text-gray-500" id="detail-account-location"></span>
+                <div class="p-6 detail-header">
+                    <div class="flex items-start justify-between pr-8">
+                        <div>
+                            <h2 class="text-lg font-bold text-white" id="detail-account-name"></h2>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-sm text-slate-400" id="detail-account-industry"></span>
+                                <span class="text-slate-600">|</span>
+                                <span class="text-sm text-slate-400" id="detail-account-location"></span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-2" id="detail-renewal-info"></div>
+                        </div>
+                        <button class="btn-secondary px-3 py-1.5 rounded-lg text-xs font-semibold" id="detail-edit-btn">
+                            Edit
+                        </button>
                     </div>
-                    <div class="flex gap-2 mt-4">
-                        <button class="detail-action-btn btn-primary px-4 py-2 rounded-xl text-sm font-semibold" data-action="activity">Log Activity</button>
-                        <button class="detail-action-btn btn-secondary px-4 py-2 rounded-xl text-sm font-semibold" data-action="task">Add Task</button>
-                        <button class="detail-action-btn btn-secondary px-4 py-2 rounded-xl text-sm font-semibold" data-action="note">Add Note</button>
+                    <div class="flex gap-2 mt-4 flex-wrap">
+                        <button class="detail-action-btn btn-primary px-3 py-1.5 rounded-lg text-xs font-semibold" data-action="activity">Log Activity</button>
+                        <button class="detail-action-btn btn-secondary px-3 py-1.5 rounded-lg text-xs font-semibold" data-action="task">Add Task</button>
+                        <button class="detail-action-btn btn-secondary px-3 py-1.5 rounded-lg text-xs font-semibold" data-action="note">Add Note</button>
+                        <button class="detail-action-btn btn-secondary px-3 py-1.5 rounded-lg text-xs font-semibold" data-action="deal">Add Deal</button>
+                        <button class="detail-action-btn btn-secondary px-3 py-1.5 rounded-lg text-xs font-semibold" data-action="contact">Add Contact</button>
                     </div>
                 </div>
 
                 <!-- Tabs -->
-                <div class="border-b px-6">
-                    <div class="flex gap-4">
-                        <button class="detail-tab active py-3 px-1 border-b-2 border-blue-600 text-blue-600 font-medium text-sm" data-tab="activities">Activities</button>
-                        <button class="detail-tab py-3 px-1 border-b-2 border-transparent text-gray-500 font-medium text-sm hover:text-gray-700" data-tab="tasks">Tasks</button>
-                        <button class="detail-tab py-3 px-1 border-b-2 border-transparent text-gray-500 font-medium text-sm hover:text-gray-700" data-tab="notes">Notes</button>
+                <div class="border-b border-slate-700 px-6">
+                    <div class="flex gap-1 overflow-x-auto">
+                        <button class="detail-tab active py-3 px-3 text-sm font-medium whitespace-nowrap" data-tab="activities">Activities</button>
+                        <button class="detail-tab py-3 px-3 text-sm font-medium whitespace-nowrap" data-tab="tasks">Tasks</button>
+                        <button class="detail-tab py-3 px-3 text-sm font-medium whitespace-nowrap" data-tab="deals">Deals</button>
+                        <button class="detail-tab py-3 px-3 text-sm font-medium whitespace-nowrap" data-tab="contacts">Contacts</button>
+                        <button class="detail-tab py-3 px-3 text-sm font-medium whitespace-nowrap" data-tab="notes">Notes</button>
                     </div>
                 </div>
 
                 <!-- Tab Content -->
                 <div class="flex-1 overflow-y-auto p-6">
                     <div id="detail-activities" class="detail-tab-content">
-                        <div id="activities-list" class="space-y-3">
-                            <!-- Activities will be rendered here -->
-                        </div>
-                        <p id="no-activities" class="text-gray-500 text-center py-8 hidden">No activities logged yet.</p>
+                        <div id="activities-list" class="space-y-3"></div>
+                        <p id="no-activities" class="text-slate-500 text-center py-8 hidden">No activities logged yet.</p>
                     </div>
                     <div id="detail-tasks" class="detail-tab-content hidden">
-                        <div id="tasks-list" class="space-y-3">
-                            <!-- Tasks will be rendered here -->
-                        </div>
-                        <p id="no-tasks" class="text-gray-500 text-center py-8 hidden">No tasks yet.</p>
+                        <div id="tasks-list" class="space-y-3"></div>
+                        <p id="no-tasks" class="text-slate-500 text-center py-8 hidden">No tasks yet.</p>
+                    </div>
+                    <div id="detail-deals" class="detail-tab-content hidden">
+                        <div id="deals-list" class="space-y-3"></div>
+                        <p id="no-deals" class="text-slate-500 text-center py-8 hidden">No deals yet.</p>
+                    </div>
+                    <div id="detail-contacts" class="detail-tab-content hidden">
+                        <div id="contacts-list" class="space-y-3"></div>
+                        <p id="no-contacts" class="text-slate-500 text-center py-8 hidden">No contacts yet.</p>
                     </div>
                     <div id="detail-notes" class="detail-tab-content hidden">
-                        <div id="notes-list" class="space-y-3">
-                            <!-- Notes will be rendered here -->
-                        </div>
-                        <p id="no-notes" class="text-gray-500 text-center py-8 hidden">No notes yet.</p>
+                        <div id="notes-list" class="space-y-3"></div>
+                        <p id="no-notes" class="text-slate-500 text-center py-8 hidden">No notes yet.</p>
                     </div>
                 </div>
             </div>
@@ -242,14 +440,14 @@
 
     <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-4 right-4 z-50 hidden">
-        <div class="bg-gray-800 text-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-2">
+        <div class="px-5 py-3 rounded-xl shadow-lg flex items-center gap-2">
             <span id="toast-message"></span>
         </div>
     </div>
 
     <!-- New Day Notification -->
     <div id="new-day-notification" class="fixed top-20 left-1/2 transform -translate-x-1/2 z-50 hidden">
-        <div class="bg-blue-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
+        <div class="text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
             </svg>
